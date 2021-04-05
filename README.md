@@ -1,0 +1,56 @@
+# GitLab 설치 가이드
+
+## 구성 요소 및 버전
+* gitlab ([gitlab/gitlab-ce:13.6.4-ce.0](https://hub.docker.com/layers/gitlab/gitlab-ce/13.6.4-ce.0/images/sha256-5c8937153d7d1373d6b2cbe6f3c5e4b80e85f13aa21c09261d7d02960d7bb774?context=explore))
+
+## Prerequisite
+* Template Operator
+
+## 폐쇄망 설치 가이드
+설치를 진행하기 전 아래의 과정을 통해 필요한 이미지 및 yaml 파일을 준비한다.
+1. 폐쇄망에서 설치하는 경우 사용하는 image repository에 Gitlab 설치 시 필요한 이미지를 push한다.
+    * 작업 디렉토리 생성 및 환경 설정
+   ```bash
+   git clone https://github.com/tmax-cloud/install-gitlab.git -b 5.0 --single-branch
+   cd install-gitlab/manifest
+   
+   ./installer.sh prepare-online
+   ```
+
+2. 폐쇄망 환경으로 전송
+   ```bash
+   # 생성된 파일 모두 SCP 또는 물리 매체를 통해 폐쇄망 환경으로 복사
+   cd ../..
+   scp -r install-gitlab <REMOTE_SERVER>:<PATH>
+   ``` 
+
+3. gitlab.config 설정
+   ```config
+   imageRegistry=172.22.11.2:30500 # 레지스트리 주소 (폐쇄망 아닐 경우 빈 값으로 설정)
+   ```
+
+4. 위의 과정에서 생성한 tar 파일들을 폐쇄망 환경으로 이동시킨 뒤 사용하려는 registry에 이미지를 push한다.
+   ```bash
+   ./installer.sh prepare-offline
+   ```
+
+## 설치 가이드
+1. [GitLab 설치](#step-1-gitlab-설치)
+
+## Step 1. GitLab 설치
+* 목적 : `GitLab에 필요한 구성 요소 설치`
+* 생성 순서 : 아래 command로 설치 yaml 적용
+   ```bash
+   ./installer.sh install
+   ```
+
+
+## 삭제 가이드
+1. [GitLab 삭제](#step-1-gitlab-삭제)
+
+## Step 1. GitLab 삭제
+* 목적 : `GitLab 구성 요소 삭제`
+* 생성 순서 : 아래 command로 설치 yaml 삭제
+   ```bash
+   ./installer.sh unsinstall
+   ```

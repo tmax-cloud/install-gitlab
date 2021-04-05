@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gitlab-system
+---
+apiVersion: tmax.io/v1
+kind: TemplateInstance
+metadata:
+  name: gitlab
+  namespace: gitlab-system
+spec:
+  clustertemplate:
+    metadata:
+      name: gitlab-template
+    parameters:
+      - name: APP_NAME
+        value: gitlab
+      - name: STORAGE
+        value: '@@STORAGE_SIZE@@'
+      - name: SERVICE_TYPE
+        value: '@@SERVICE_TYPE@@'
+      - name: SSH_PORT
+        value: 2221
+      - name: RESOURCE_CPU
+        value: "1"
+      - name: RESOURCE_MEM
+        value: 8Gi
+      - name: KEYCLOAK_URL
+        value: '@@KEYCLOAK_URL@@'
+      - name: KEYCLOAK_CLIENT
+        value: '@@KEYCLOAK_CLIENT@@'
+      - name: KEYCLOAK_SECRET
+        value: '@@KEYCLOAK_SECRET@@'
