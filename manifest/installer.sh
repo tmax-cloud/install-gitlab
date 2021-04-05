@@ -61,7 +61,7 @@ function install(){
     TRIAL=$((TRIAL+1))
 
     POD=$(kubectl -n "$NAMESPACE" get pod | grep gitlab | awk '{print $1}')
-    URL=$(kubectl -n "$NAMESPACE" exec -t "$POD" -- cat /tmp/shared/omnibus.env | grep -oP "external_url '\K[^']*(?=')")
+    URL=$(kubectl -n "$NAMESPACE" exec -t "$POD" -- cat /tmp/shared/omnibus.env 2>/dev/null | grep -oP "external_url '\K[^']*(?=')")
     if [[ "$?" == "0" ]]; then
       echo "Access URL is $URL"
       break
