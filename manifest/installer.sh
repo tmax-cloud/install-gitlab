@@ -64,6 +64,7 @@ function install(){
     URL=$(kubectl -n "$NAMESPACE" exec -t "$POD" -- cat /tmp/shared/omnibus.env 2>/dev/null | grep -oP "external_url '\K[^']*(?=')")
     if [[ "$?" == "0" ]]; then
       echo "Access URL is $URL"
+      export GITLAB_URL="$URL"
       break
     fi
   done
