@@ -12,9 +12,9 @@ function prepare_online(){
   curl -s "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/template.yaml" -o "$install_dir/yaml/template.yaml"
   curl -s "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/instance.yaml" -o "$install_dir/yaml/instance.yaml"
 
-  docker pull "gitlab/gitlab-ce:13.6.4-ce.0"
-  docker tag "gitlab/gitlab-ce:13.6.4-ce.0" "gitlab:13.6.4-ce.0"
-  docker save "gitlab:13.6.4-ce.0" > "$install_dir/tar/gitlab_13.6.4-ce.0.tar"
+  sudo docker pull "gitlab/gitlab-ce:13.6.4-ce.0"
+  sudo docker tag "gitlab/gitlab-ce:13.6.4-ce.0" "gitlab:13.6.4-ce.0"
+  sudo docker save "gitlab:13.6.4-ce.0" > "$install_dir/tar/gitlab_13.6.4-ce.0.tar"
 }
 
 function prepare_offline(){
@@ -22,9 +22,9 @@ function prepare_offline(){
   echo  "========================  Preparing for GitLab =========================="
   echo  "========================================================================="
 
-  docker load < "$install_dir/tar/gitlab_13.6.4-ce.0.tar"
-  docker tag "gitlab:13.6.4-ce.0" "$imageRegistry/gitlab:13.6.4-ce.0"
-  docker push "$imageRegistry/gitlab:13.6.4-ce.0"
+  sudo docker load < "$install_dir/tar/gitlab_13.6.4-ce.0.tar"
+  sudo docker tag "gitlab:13.6.4-ce.0" "$imageRegistry/gitlab:13.6.4-ce.0"
+  sudo docker push "$imageRegistry/gitlab:13.6.4-ce.0"
 }
 
 function install(){
