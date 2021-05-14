@@ -13,8 +13,11 @@ function prepare_online(){
   curl -s "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/instance.yaml" -o "$install_dir/yaml/instance.yaml"
 
   sudo docker pull "gitlab/gitlab-ce:13.6.4-ce.0"
+  sudo docker pull "bitnami/kubectl:latest"
   sudo docker tag "gitlab/gitlab-ce:13.6.4-ce.0" "gitlab:13.6.4-ce.0"
+  sudo docker tag "bitnami/kubectl:latest" "kubectl:latest"
   sudo docker save "gitlab:13.6.4-ce.0" > "$install_dir/tar/gitlab_13.6.4-ce.0.tar"
+  sudo docker save "kubectl:latest" > "$install_dir/tar/kubectl_latest.tar"
 }
 
 function prepare_offline(){
@@ -23,8 +26,11 @@ function prepare_offline(){
   echo  "========================================================================="
 
   sudo docker load < "$install_dir/tar/gitlab_13.6.4-ce.0.tar"
+  sudo docker load < "$install_dir/tar/kubectl_latest.tar"
   sudo docker tag "gitlab:13.6.4-ce.0" "$imageRegistry/gitlab:13.6.4-ce.0"
+  sudo docker tag "kubectl:latest" "$imageRegistry/kubectl:latest"
   sudo docker push "$imageRegistry/gitlab:13.6.4-ce.0"
+  sudo docker push "$imageRegistry/kubectl:latest"
 }
 
 function install(){
@@ -37,7 +43,8 @@ function install(){
     kubectl apply -f "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/template.yaml" "$kubectl_opt"
   else
     cp "$install_dir/yaml/template.yaml" "$install_dir/yaml/template_modified.yaml"
-    sed -ㅑ -E "s/gitlab\/gitlab-ce\:13.6.4-ce.0/$imageRegistry\/gitlab\:13.6.4-ce.0/g" "./yaml/template_modified.yaml"
+    sed -i -E "s/gitlab\/gitlab-ce\:13.6.4-ce.0/$imageRegistry\/gitlab\:13.6.4-ce.0/g" "$install_dir/yaml/template_modified.yaml"
+    sed -i -E "s/bitnami\/kubectl/$imageRegistry\/kubectl/g" "$install_dir/yaml/template_modified.yaml"
     kubectl apply -f "$install_dir/yaml/template_modified.yaml" "$kubectl_opt"
   fi
 
