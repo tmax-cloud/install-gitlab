@@ -10,7 +10,6 @@ function prepare_online(){
   echo  "========================================================================="
 
   curl -s "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/template.yaml" -o "$install_dir/yaml/template.yaml"
-  curl -s "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/instance.yaml" -o "$install_dir/yaml/instance.yaml"
 
   sudo docker pull "gitlab/gitlab-ce:13.6.4-ce.0"
   sudo docker pull "bitnami/kubectl:latest"
