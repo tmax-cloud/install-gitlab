@@ -32,8 +32,40 @@
     - AccessType: `confidential`
     - Valid Redirect URIs: `*`
     
-    2. 시크릿 복사
+    2. 클라이언트 시크릿 복사
     - `Client > gitlab > Credentials > Secret` 복사
+
+    3. TLS 시크릿 복사 (Keycloak이 self-signed 인증서를 사용할 경우)  
+       - Keycloak이 클러스터 내부에 있을 경우  
+         Keycloak 네임스페이스의 TLS 시크릿을 gitlab-system 네임스페이스로 복사
+         ```bash
+         KEYCLOAK_NS=<Keycloak 네임스페이스>
+         KEYCLOAK_TLS_SECRET_NAME=<Keycloak TLS 인증서가 저장되어있는 Secret 이름>
+
+         kubectl create ns gitlab-system
+         kubectl -n "$KEYCLOAK_NS" get secret "$KEYCLOAK_TLS_SECRET_NAME" --export -o yaml | kubectl apply -n gitlab-system -f -
+         ```
+       - Keycloak이 외부에 있을 경우  
+         해당 Keycloak의 public 인증서를 `data`>`tls.crt`에 넣어 Secret 생성
+         ```bash
+         KEYCLOAK_CERT_FILE=<인증서 파일 경로>
+         KEYCLOAK_TLS_SECRET_NAME=<Keycloak TLS 인증서가 저장될 Secret 이름>
+
+         kubectl create ns gitlab-system
+
+         cat <<EOT | kubectl apply -n gitlab-system -f -
+         apiVersion: v1
+         kind: Secret
+         metadata:
+           name: $KEYCLOAK_TLS_SECRET_NAME
+         type: kubernetes.io/tls
+         data:
+           tls.crt: $(cat -n $KEYCLOAK_CERT_FILE | base64 -w 0)
+           tls.key: $(echo 'dummyKey' | base64 -w 0)
+         EOT
+
+         kubectl -n gitlab-system create secret tls "$KEYCLOAK_TLS_SECRET_NAME" --cert="$KEYCLOAK_CERT_FILE"
+         ```
 
 4. gitlab.config 설정
    ```config
@@ -43,6 +75,7 @@
    authUrl='https://172.22.22.2' # 키클록 URL (`http://`또는 `https://` 포함)
    authClient='gitlab' # 키클록 클라이언트 이름
    authSecret='*******' # 키클록 클라이언트 시크릿
+   authTLSSecretName='hyperauth-https' # 키클록 TLS 시크릿 이름
    ```
 
 5. 위의 과정에서 생성한 tar 파일들을 폐쇄망 환경으로 이동시킨 뒤 사용하려는 registry에 이미지를 push한다.

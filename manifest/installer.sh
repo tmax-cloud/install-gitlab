@@ -55,6 +55,7 @@ function install(){
   sed -i "s|@@KEYCLOAK_URL@@|$authUrl|g" "$install_dir/yaml/instance_modified.yaml"
   sed -i "s/@@KEYCLOAK_CLIENT@@/$authClient/g" "$install_dir/yaml/instance_modified.yaml"
   sed -i "s/@@KEYCLOAK_SECRET@@/$authSecret/g" "$install_dir/yaml/instance_modified.yaml"
+  sed -i "s/@@KEYCLOAK_TLS_SECRET_NAME@@/$authTLSSecretName/g" "$install_dir/yaml/instance_modified.yaml"
 
   kubectl apply -f "$install_dir/yaml/instance_modified.yaml" "$kubectl_opt"
 

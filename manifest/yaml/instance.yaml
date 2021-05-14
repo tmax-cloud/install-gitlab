@@ -31,3 +31,5 @@ spec:
         value: '@@KEYCLOAK_CLIENT@@'
       - name: KEYCLOAK_SECRET
         value: '@@KEYCLOAK_SECRET@@'
+      - name: KEYCLOAK_TLS_SECRET_NAME
+        value: '@@KEYCLOAK_TLS_SECRET_NAME@@'
