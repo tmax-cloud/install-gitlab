@@ -43,7 +43,7 @@
          KEYCLOAK_TLS_SECRET_NAME=<Keycloak TLS 인증서가 저장되어있는 Secret 이름>
 
          kubectl create ns gitlab-system
-         kubectl -n "$KEYCLOAK_NS" get secret "$KEYCLOAK_TLS_SECRET_NAME" --export -o yaml | kubectl apply -n gitlab-system -f -
+         kubectl -n "$KEYCLOAK_NS" get secret "$KEYCLOAK_TLS_SECRET_NAME" -o yaml | sed -E 's/namespace:.*//' | kubectl apply -n gitlab-system -f -
          ```
        - Keycloak이 외부에 있을 경우  
          해당 Keycloak의 public 인증서를 `data`>`tls.crt`에 넣어 Secret 생성
