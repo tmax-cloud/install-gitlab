@@ -51,8 +51,8 @@
            name: $KEYCLOAK_TLS_SECRET_NAME
          type: kubernetes.io/tls
          data:
-           tls.crt: $(cat -n $KEYCLOAK_CERT_FILE | base64 -w 0)
-           tls.key: $(echo 'dummyKey' | base64 -w 0)
+           tls.crt: $(cat $KEYCLOAK_CERT_FILE | base64 -w 0)
+           tls.key: $(echo -n 'dummyKey' | base64 -w 0)
          EOT
          ```
 
