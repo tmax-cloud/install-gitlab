@@ -34,4 +34,4 @@ spec:
       - name: KEYCLOAK_TLS_SECRET_NAME
         value: '@@KEYCLOAK_TLS_SECRET_NAME@@'
       - name: INGRESS_HOST
-        value: 'gitlab.tmaxcloud.org'
+        value: '@@INGRESS_HOST@@'

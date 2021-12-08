@@ -9,8 +9,6 @@ function prepare_online(){
   echo  "========================  Preparing for GitLab =========================="
   echo  "========================================================================="
 
-  curl -s "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/template.yaml" -o "$install_dir/yaml/template.yaml"
-
   sudo docker pull "gitlab/gitlab-ce:13.6.4-ce.0"
   sudo docker pull "bitnami/kubectl:latest"
   sudo docker tag "gitlab/gitlab-ce:13.6.4-ce.0" "gitlab:13.6.4-ce.0"
@@ -40,7 +38,7 @@ function install(){
   # Apply ClusterTemplate
   if [[ "$imageRegistry" == "" ]]; then
     kubectl apply -f "$install_dir/yaml/template.yaml" "$kubectl_opt"
-    
+
   else
     cp "$install_dir/yaml/template.yaml" "$install_dir/yaml/template_modified.yaml"
     sed -i -E "s/gitlab\/gitlab-ce\:13.6.4-ce.0/$imageRegistry\/gitlab\:13.6.4-ce.0/g" "$install_dir/yaml/template_modified.yaml"
@@ -57,6 +55,8 @@ function install(){
   sed -i "s/@@KEYCLOAK_CLIENT@@/$authClient/g" "$install_dir/yaml/instance_modified.yaml"
   sed -i "s/@@KEYCLOAK_SECRET@@/$authSecret/g" "$install_dir/yaml/instance_modified.yaml"
   sed -i "s/@@KEYCLOAK_TLS_SECRET_NAME@@/$authTLSSecretName/g" "$install_dir/yaml/instance_modified.yaml"
+
+  sed -i "s/@@INGRESS_HOST@@/$ingressHost/g" "$install_dir/yaml/instance_modified.yaml"
 
   kubectl apply -f "$install_dir/yaml/instance_modified.yaml" "$kubectl_opt"
 
