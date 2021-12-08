@@ -107,30 +107,30 @@ objects:
       targetPort: 22
     selector:
       app: ${APP_NAME}
-      - apiVersion: networking.k8s.io/v1
-        kind: Ingress
-        metadata:
-          name: ${APP_NAME}-ingress
-          labels:
-            ingress.tmaxcloud.org/name: gitlab
-          annotations:
-            traefik.ingress.kubernetes.io/router.entrypoints: websecure
-        spec:
-          ingressClassName: tmax-cloud
-          tls:
-          - hosts:
-            - gitlab.${EXTERNAL_URL}
-          rules:
-            - host: gitlab.${EXTERNAL_URL}
-              http:
-               paths:
-                 - pathType: Prefix
-                   path: /
-                   backend:
-                     service:
-                       name: ${APP_NAME}-service
-                       port:
-                         number: ${WEB_NODE_PORT}
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: ${APP_NAME}-ingress
+    labels:
+      ingress.tmaxcloud.org/name: gitlab
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+  spec:
+    ingressClassName: tmax-cloud
+    tls:
+    - hosts:
+      - gitlab.${EXTERNAL_URL}
+    rules:
+      - host: gitlab.${EXTERNAL_URL}
+        http:
+         paths:
+           - pathType: Prefix
+             path: /
+             backend:
+               service:
+                 name: ${APP_NAME}-service
+                 port:
+                   number: ${WEB_NODE_PORT}
 - apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
