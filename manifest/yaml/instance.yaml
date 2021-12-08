@@ -35,3 +35,5 @@ spec:
         value: '@@KEYCLOAK_TLS_SECRET_NAME@@'
       - name: EXTERNAL_URL
         value: 'tmaxcloud.org'
+      - name: INGRESS_HOST
+        value: 'gitlab.tmaxcloud.org'
