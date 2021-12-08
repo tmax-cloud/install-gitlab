@@ -149,9 +149,9 @@ objects:
     ingressClassName: tmax-cloud
     tls:
     - hosts:
-      - gitlab.${EXTERNAL_URL}
+      - ${INGRESS_HOST}
     rules:
-      - host: gitlab.${EXTERNAL_URL}
+      - host: ${INGRESS_HOST}
         http:
          paths:
            - pathType: Prefix
