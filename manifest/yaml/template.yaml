@@ -3,14 +3,14 @@ kind: ClusterTemplate
 metadata:
   name: gitlab-template
   annotations:
-    template-version: 5.0.0
-    tested-operator-version: v0.2.0
+    template-version: 5.0.4
+    tested-operator-version: 0.2.1
 shortDescription: "GitLab Deployment"
 longDescription: "GitLab Deployment"
 urlDescription: https://about.gitlab.com/
 imageUrl: "https://upload.wikimedia.org/wikipedia/commons/c/c6/GitLab_logo.png"
 provider: tmax
-tags:
+categories:
 - gitlab
 - git
 - scm
@@ -26,11 +26,11 @@ parameters:
 - name: STORAGE_CLASS
   displayName: StorageClass
   description: Storage class name
-  value: csi-cephfs-sc
+  value: manual
   required: true
 - name: SERVICE_TYPE
   displayName: ServiceType
-  description: Service Type (ClsuterIP/NodePort/LoadBalancer/Ingress)
+  description: Service Type (ClusterIP/NodePort/LoadBalancer/Ingress)
   required: true
 - name: EXTERNAL_URL
   displayName: ExternalURL
@@ -52,6 +52,7 @@ parameters:
   displayName: IngressHost
   description: (Only for Ingress type) Ingress hostname
   required: false
+  value: ''
 - name: SSH_PORT
   displayName: SshPort
   description: SSH port for git clone/pull/push
@@ -87,38 +88,7 @@ parameters:
   value: ''
   required: false
 objects:
-- apiVersion: v1
-  kind: ServiceAccount
-  metadata:
-    name: ${APP_NAME}-account
-- apiVersion: rbac.authorization.k8s.io/v1
-  kind: Role
-  metadata:
-    name: ${APP_NAME}-role
-  rules:
-  - apiGroups: [""]
-    resources: ["services"]
-    resourceNames: ["${APP_NAME}-service"]
-    verbs: ["get", "list", "create", "patch", "update"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    resourceNames: ["${KEYCLOAK_TLS_SECRET_NAME}"]
-    verbs: ["list", "get"]
-  - apiGroups: ["networkings", "extensions"]
-    resources: ["ingresses"]
-    resourceNames: ["${APP_NAME}-ingress"]
-    verbs: ["get", "list", "create", "patch", "update", "delete"]
-- apiVersion: rbac.authorization.k8s.io/v1
-  kind: RoleBinding
-  metadata:
-    name: ${APP_NAME}-binding
-  subjects:
-  - kind: ServiceAccount
-    name: ${APP_NAME}-account
-  roleRef:
-    apiGroup: rbac.authorization.k8s.io
-    kind: Role
-    name: ${APP_NAME}-role
+
 - apiVersion: v1
   kind: Service
   metadata:
@@ -137,30 +107,30 @@ objects:
       targetPort: 22
     selector:
       app: ${APP_NAME}
-- apiVersion: networking.k8s.io/v1
-  kind: Ingress
-  metadata:
-    name: ${APP_NAME}-ingress
-    labels:
-      ingress.tmaxcloud.org/name: gitlab
-    annotations:
-      traefik.ingress.kubernetes.io/router.entrypoints: websecure
-  spec:
-    ingressClassName: tmax-cloud
-    tls:
-    - hosts:
-      - gitlab.${EXTERNAL_URL}
-    rules:
-      - host: gitlab.${EXTERNAL_URL}
-        http:
-         paths:
-           - pathType: Prefix
-             path: /
-             backend:
-               service:
-                 name: ${APP_NAME}-service
-                 port:
-                   number: ${WEB_NODE_PORT}
+      - apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: ${APP_NAME}-ingress
+          labels:
+            ingress.tmaxcloud.org/name: gitlab
+          annotations:
+            traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        spec:
+          ingressClassName: tmax-cloud
+          tls:
+          - hosts:
+            - gitlab.${EXTERNAL_URL}
+          rules:
+            - host: gitlab.${EXTERNAL_URL}
+              http:
+               paths:
+                 - pathType: Prefix
+                   path: /
+                   backend:
+                     service:
+                       name: ${APP_NAME}-service
+                       port:
+                         number: ${WEB_NODE_PORT}
 - apiVersion: v1
   kind: PersistentVolumeClaim
   metadata:
@@ -194,7 +164,7 @@ objects:
         serviceAccountName: ${APP_NAME}-account
         initContainers:
         - name: parse-svc
-          image: bitnami/kubectl
+          image: docker.io/bitnami/kubectl:1.20.10
           env:
           - name: NODE_IP
             valueFrom:
@@ -318,7 +288,7 @@ objects:
             fi
         containers:
         - name: ${APP_NAME}
-          image: gitlab/gitlab-ce:13.6.4-ce.0
+          image: docker.io/gitlab/gitlab-ce:13.6.4-ce.0
           command:
           - /bin/sh
           - -c
@@ -358,6 +328,8 @@ objects:
               - /bin/bash
               - -c
               - |
+                # apt-get update
+                # apt-get upgrade python3
                 /opt/gitlab/bin/gitlab-healthcheck --fail --max-time 10
             periodSeconds: 150
         volumes:
