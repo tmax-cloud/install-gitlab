@@ -14,7 +14,7 @@
    ```bash
    git clone https://github.com/tmax-cloud/install-gitlab.git -b 5.0 --single-branch
    cd install-gitlab/manifest
-   
+
    ./installer.sh prepare-online
    ```
 
@@ -23,7 +23,7 @@
    # 생성된 파일 모두 SCP 또는 물리 매체를 통해 폐쇄망 환경으로 복사
    cd ../..
    scp -r install-gitlab <REMOTE_SERVER>:<PATH>
-   ``` 
+   ```
 
 3. **(Keycloak 연동 시)**
     1. 키클록에서 클라이언트 생성
@@ -31,7 +31,7 @@
     - Client-Protocol: `openid-connect`
     - AccessType: `confidential`
     - Valid Redirect URIs: `*`
-    
+
     2. 클라이언트 시크릿 복사
     - `Client > gitlab > Credentials > Secret` 복사
 
@@ -41,9 +41,9 @@
          ```bash
          KEYCLOAK_CERT_FILE=<인증서 파일 경로>
          KEYCLOAK_TLS_SECRET_NAME=<Keycloak TLS 인증서가 저장될 Secret 이름>
-    
+
          kubectl create ns gitlab-system
-    
+
          cat <<EOT | kubectl apply -n gitlab-system -f -
          apiVersion: v1
          kind: Secret
@@ -59,12 +59,13 @@
 4. gitlab.config 설정
    ```config
    imageRegistry=172.22.11.2:30500 # 레지스트리 주소 (폐쇄망 아닐 경우 빈 값으로 설정)
-   
+
    # 아래는 Keycloak 연동시 기재 필요
    authUrl='https://172.22.22.2' # 키클록 URL (`http://`또는 `https://` 포함)
    authClient='gitlab' # 키클록 클라이언트 이름
    authSecret='*******' # 키클록 클라이언트 시크릿
    authTLSSecretName='hyperauth-https' # 키클록 TLS 시크릿 이름
+   ingressHost='gitlab.tmaxcloud.org' # INGRESS주소
    ```
 
 5. 위의 과정에서 생성한 tar 파일들을 폐쇄망 환경으로 이동시킨 뒤 사용하려는 registry에 이미지를 push한다.
