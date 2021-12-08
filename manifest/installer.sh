@@ -39,7 +39,9 @@ function install(){
 
   # Apply ClusterTemplate
   if [[ "$imageRegistry" == "" ]]; then
-    kubectl apply -f "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/template.yaml" "$kubectl_opt"
+    cp "$install_dir/yaml/template.yaml" "$install_dir/yaml/template_modified.yaml"
+    kubectl apply -f "$install_dir/yaml/template_modified.yaml" "$kubectl_opt"
+    # kubectl apply -f "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/template.yaml" "$kubectl_opt"
   else
     cp "$install_dir/yaml/template.yaml" "$install_dir/yaml/template_modified.yaml"
     sed -i -E "s/gitlab\/gitlab-ce\:13.6.4-ce.0/$imageRegistry\/gitlab\:13.6.4-ce.0/g" "$install_dir/yaml/template_modified.yaml"

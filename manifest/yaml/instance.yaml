@@ -34,4 +34,4 @@ spec:
       - name: KEYCLOAK_TLS_SECRET_NAME
         value: '@@KEYCLOAK_TLS_SECRET_NAME@@'
       - name: EXTERNAL_URL
-        value: '@@EXTERNAL_URL@@'
+        value: 'tmaxcloud.org'
