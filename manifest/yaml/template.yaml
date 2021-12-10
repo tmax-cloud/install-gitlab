@@ -300,7 +300,7 @@ objects:
                     ING_HOST="${APP_NAME}.$NAMESPACE.${NOW_IP}.nip.io"
                     EXTERNAL_IP="http://$ING_HOST/"
                 else
-                    ING_HOST=$(kubectl get ingress -n gitlab-system gitlab-ingress -o jsonpath='{.spec.rules[].host}')
+                    ING_HOST=$(kubectl get ingress ${APP_NAME}-ingress -o jsonpath='{.spec.rules[].host}')
                     #ING_HOST="${INGRESS_HOST}"
                     EXTERNAL_IP="http://${INGRESS_HOST}/"
                 fi
