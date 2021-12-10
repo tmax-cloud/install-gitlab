@@ -116,7 +116,7 @@ objects:
     verbs: ["get", "list", "create", "patch", "update", "delete"]
   - apiGroups: ["cert-manager.io"]
     resources: ["Certificate","certificates"]
-    verbs: ["get", "list", "create", "patch", "update", "delete"]        
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
 - apiVersion: rbac.authorization.k8s.io/v1
   kind: RoleBinding
   metadata:
@@ -168,7 +168,7 @@ objects:
       - server auth
       - client auth
     dnsNames:
-      - ${INGRESS_HOST}
+      - gitlab.${INGRESS_HOST}
     issuerRef:
       kind: ClusterIssuer
       group: cert-manager.io
@@ -185,9 +185,9 @@ objects:
     ingressClassName: tmax-cloud
     tls:
     - hosts:
-      - ${INGRESS_HOST}
+      - gitlab.${INGRESS_HOST}
     rules:
-      - host: ${INGRESS_HOST}
+      - host: gitlab.${INGRESS_HOST}
         http:
          paths:
            - pathType: Prefix

@@ -37,7 +37,7 @@
 
     3. TLS 시크릿 
          
-         1. **cert-manager통한 Gitlab secret을 사용할 경우, gitlab.config.authTLSSecretName을 gitlab-secret으로 설정한다([참조](yaml/template.yaml#L149))**
+         1. **cert-manager통한 Gitlab secret을 사용할 경우, gitlab.config.authTLSSecretName을 gitlab-secret으로 설정한다 ([참조](manifest/yaml/template.yaml#L149))**
          2. **HyperAuth를 사용할 경우 HyperAuth 설치 시 마스터 노드들에 설치된 `/etc/kubernetes/pki/hypercloud-root-ca.crt` 인증서 사용**
          
          ```bash
@@ -69,7 +69,7 @@
    authClient='gitlab' # 키클록 클라이언트 이름
    authSecret='*******' # 키클록 클라이언트 시크릿
    authTLSSecretName='gitlab-secret' # TLS 시크릿 이름
-   ingressHost='gitlab.tmaxcloud.org' # INGRESS주소
+   custom_domain_name='tmaxcloud.org' # INGRESS주소
    
    
    ```
