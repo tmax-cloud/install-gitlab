@@ -2,6 +2,7 @@
 
 export kubectl_opt="-v=0"
 [[ "$0" != "$BASH_SOURCE" ]] && export install_dir=$(dirname "$BASH_SOURCE") || export install_dir=$(dirname $0)
+sed -i "s/custom_domain_name=/ingressHost=/g" "$install_dir/yaml/gitlab.config"
 . "$install_dir/gitlab.config"
 
 function get_resources(){
