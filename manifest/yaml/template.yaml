@@ -108,6 +108,15 @@ objects:
     resources: ["ingresses"]
     resourceNames: ["${APP_NAME}-ingress"]
     verbs: ["get", "list", "create", "patch", "update", "delete"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+  - apiGroups: ["cert-manager.io"]
+    resources: ["Issuers"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]
+  - apiGroups: ["cert-manager.io"]
+    resources: ["Certificate","certificates"]
+    verbs: ["get", "list", "create", "patch", "update", "delete"]        
 - apiVersion: rbac.authorization.k8s.io/v1
   kind: RoleBinding
   metadata:
@@ -137,6 +146,33 @@ objects:
       targetPort: 22
     selector:
       app: ${APP_NAME}
+- apiVersion: cert-manager.io/v1
+  kind: Certificate
+  metadata:
+    labels:
+      app.kubernetes.io/instance: traefik
+      app.kubernetes.io/managed-bu: tmax-cloud
+      app.kubernetes.io/name: api-gateway
+    name: gitlab
+    namespace: gitlab-system
+  spec:
+    secretName: gitlab-secret
+    commonName: api-gateway
+    subject:
+      organizations:
+        - "tmax-cloud"
+    isCA: false
+    usages:
+      - digital signature
+      - key encipherment
+      - server auth
+      - client auth
+    dnsNames:
+      - ${INGRESS_HOST}
+    issuerRef:
+      kind: ClusterIssuer
+      group: cert-manager.io
+      name: tmaxcloud-issuer
 - apiVersion: networking.k8s.io/v1
   kind: Ingress
   metadata:
