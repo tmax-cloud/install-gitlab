@@ -334,7 +334,7 @@ objects:
             gitlab_rails['omniauth_providers'] = [
             {
                     'name' => 'oauth2_generic',
-                    'issuer' => "http://${KEYCLOAK_URL}",
+                    'issuer' => '${KEYCLOAK_URL}',
                     'app_id' => '${KEYCLOAK_CLIENT}',
                     'app_secret' => '${KEYCLOAK_SECRET}',
                     'discovery' => true,
