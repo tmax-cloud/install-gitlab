@@ -310,8 +310,10 @@ objects:
             fi
             # Override external url
             if [[ "${EXTERNAL_URL}" != "" ]]; then
-                EXTERNAL_IP="${EXTERNAL_URL}"
+                #EXTERNAL_IP="${EXTERNAL_URL}"
+                EXTERNAL_IP="http://${ING_HOST}"
             fi
+
             cat <<EOT >> /tmp/shared/omnibus.env
             external_url '$EXTERNAL_IP'
             gitlab_rails['gitlab_shell_ssh_port'] = $PORT_SSH
@@ -332,7 +334,7 @@ objects:
             gitlab_rails['omniauth_providers'] = [
             {
                     'name' => 'oauth2_generic',
-                    'issuer' => '${KEYCLOAK_URL}',
+                    'issuer' => "http://${KEYCLOAK_URL}",
                     'app_id' => '${KEYCLOAK_CLIENT}',
                     'app_secret' => '${KEYCLOAK_SECRET}',
                     'discovery' => true,
@@ -342,7 +344,7 @@ objects:
                             'user_info_url' => '/auth/realms/tmax/protocol/openid-connect/userinfo',
                             'authorize_url' => '/auth/realms/tmax/protocol/openid-connect/auth',
                             'token_url' => '/auth/realms/tmax/protocol/openid-connect/token',
-                            'redirect_uri' => '$EXTERNAL_IP/users/auth/oauth2_generic/callback',
+                            'redirect_uri' => "${EXTERNAL_IP}/users/auth/oauth2_generic/callback",
                     },
                     user_response_structure: {
                     attributes: { email:'email', first_name:'given_name', last_name:'family_name', name:'name', nickname:'preferred_username' },
