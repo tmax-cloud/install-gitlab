@@ -156,7 +156,7 @@ objects:
     name: gitlab
     namespace: gitlab-system
   spec:
-    secretName: gitlab-secret
+    secretName: gitlab-cert
     commonName: api-gateway
     subject:
       organizations:
@@ -302,7 +302,7 @@ objects:
                 else
                     ING_HOST=$(kubectl get ingress ${APP_NAME}-ingress -o jsonpath='{.spec.rules[].host}')
                     #ING_HOST="${INGRESS_HOST}"
-                    EXTERNAL_IP="http://${INGRESS_HOST}/"
+                    EXTERNAL_IP="http://$ING_HOST/"
                 fi
                 kubectl patch ingress ${APP_NAME}-ingress --type=json -p '[{"op": "replace", "path": "/spec/rules/0/host", "value": "'$ING_HOST'"}]'
             else
