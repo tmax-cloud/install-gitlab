@@ -14,7 +14,7 @@
    ```bash
    git clone https://github.com/tmax-cloud/install-gitlab.git -b 5.0 --single-branch
    cd install-gitlab/manifest
-
+    
    ./installer.sh prepare-online
    ```
 
@@ -37,15 +37,14 @@
 
     3. TLS 시크릿
 
-         1. **cert-manager통한 Gitlab secret을 사용할 경우, gitlab.config.authTLSSecretName을 gitlab-secret으로 설정한다 ([참조](manifest/yaml/template.yaml#L149))**
-         2. **HyperAuth를 사용할 경우 HyperAuth 설치 시 마스터 노드들에 설치된 `/etc/kubernetes/pki/hypercloud-root-ca.crt` 인증서 사용**
-
+         **HyperAuth를 사용할 경우 HyperAuth 설치 시 마스터 노드들에 설치된 `/etc/kubernetes/pki/hypercloud-root-ca.crt` 인증서 사용**
+         
          ```bash
          KEYCLOAK_CERT_FILE=<인증서 파일 경로>
          KEYCLOAK_TLS_SECRET_NAME=<Keycloak TLS 인증서가 저장될 Secret 이름>
-
+         
          kubectl create ns gitlab-system
-
+         
          cat <<EOT | kubectl apply -n gitlab-system -f -
          apiVersion: v1
          kind: Secret
@@ -65,7 +64,7 @@
    imageRegistry=172.22.11.2:30500 # 레지스트리 주소 (폐쇄망 아닐 경우 빈 값으로 설정)
    externalURL='http://gitlab.tmaxcloud.org' # 외부 노출 주소 (`http://`또는 `https://` 포함)
    ingressHost='gitlab.tmaxcloud.org' # ingress host 주소 (`http://`또는 `https://` 미포함)
-
+   
    # 아래는 Keycloak 연동시 기재 필요
    authUrl='https://172.22.22.2' # 키클록 URL (`http://`또는 `https://` 포함)
    authClient='gitlab' # 키클록 클라이언트 이름
