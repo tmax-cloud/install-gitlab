@@ -9,6 +9,8 @@ function prepare_online(){
   echo  "========================  Preparing for GitLab =========================="
   echo  "========================================================================="
 
+  curl -s "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/template.yaml" -o "$install_dir/yaml/template.yaml"
+
   sudo docker pull "gitlab/gitlab-ce:13.6.4-ce.0"
   sudo docker pull "bitnami/kubectl:latest"
   sudo docker tag "gitlab/gitlab-ce:13.6.4-ce.0" "gitlab:13.6.4-ce.0"
@@ -37,8 +39,7 @@ function install(){
 
   # Apply ClusterTemplate
   if [[ "$imageRegistry" == "" ]]; then
-    kubectl apply -f "$install_dir/yaml/template.yaml" "$kubectl_opt"
-
+    kubectl apply -f "https://raw.githubusercontent.com/tmax-cloud/catalog/$templateVersion/gitlab/template.yaml" "$kubectl_opt"
   else
     cp "$install_dir/yaml/template.yaml" "$install_dir/yaml/template_modified.yaml"
     sed -i -E "s/gitlab\/gitlab-ce\:13.6.4-ce.0/$imageRegistry\/gitlab\:13.6.4-ce.0/g" "$install_dir/yaml/template_modified.yaml"
@@ -48,6 +49,10 @@ function install(){
 
   # Apply TemplateInstance
   cp "$install_dir/yaml/instance.yaml" "$install_dir/yaml/instance_modified.yaml"
+  cp "$install_dir/yaml/ingress.yaml" "$install_dir/yaml/ingress_modified.yaml"
+  sed -i "s|@@INGRESS_HOST@@|$ingressHost|g" "$install_dir/yaml/ingress_modified.yaml"
+  sed -i "s|@@EXTERNAL_URL@@|$externalURL|g" "$install_dir/yaml/instance_modified.yaml"
+  sed -i "s|@@INGRESS_HOST@@|$ingressHost|g" "$install_dir/yaml/instance_modified.yaml"
 
   sed -i "s/@@STORAGE_SIZE@@/$storageSize/g" "$install_dir/yaml/instance_modified.yaml"
   sed -i "s/@@SERVICE_TYPE@@/$serviceType/g" "$install_dir/yaml/instance_modified.yaml"
@@ -56,10 +61,7 @@ function install(){
   sed -i "s/@@KEYCLOAK_SECRET@@/$authSecret/g" "$install_dir/yaml/instance_modified.yaml"
   sed -i "s/@@KEYCLOAK_TLS_SECRET_NAME@@/$authTLSSecretName/g" "$install_dir/yaml/instance_modified.yaml"
 
-  sed -i "s/@@INGRESS_HOST@@/$ingressHost/g" "$install_dir/yaml/instance_modified.yaml"
-
   kubectl apply -f "$install_dir/yaml/instance_modified.yaml" "$kubectl_opt"
-
   echo "=== Waiting for GitLab's address to be ready... ==="
   NAMESPACE=gitlab-system
   TRIAL=0
@@ -76,6 +78,7 @@ function install(){
       break
     fi
   done
+  kubectl apply -f "$install_dir/yaml/ingress_modified.yaml" "$kubectl_opt"
 
   echo "It can take several minutes until gitlab to be ready"
 
