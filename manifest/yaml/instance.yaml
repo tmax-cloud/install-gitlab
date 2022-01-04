@@ -35,5 +35,3 @@ spec:
         value: '@@KEYCLOAK_TLS_SECRET_NAME@@'
       - name: INGRESS_HOST
         value: '@@INGRESS_HOST@@'
-      - name: EXTERNAL_URL
-        value: '@@EXTERNAL_URL@@'
