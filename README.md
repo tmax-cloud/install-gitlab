@@ -35,8 +35,8 @@
     2. 클라이언트 시크릿 복사
     - `Client > gitlab > Credentials > Secret` 복사
 
-    3. TLS 시크릿 
-       
+    3. TLS 시크릿
+
          **HyperAuth를 사용할 경우 HyperAuth 설치 시 마스터 노드들에 설치된 `/etc/kubernetes/pki/hypercloud-root-ca.crt` 인증서 사용**
          
          ```bash
@@ -56,24 +56,22 @@
            tls.key: $(echo -n 'dummyKey' | base64 -w 0)
          EOT
          ```
-         
-         
-    
+
+
+
 4. gitlab.config 설정
    ```config
    imageRegistry=172.22.11.2:30500 # 레지스트리 주소 (폐쇄망 아닐 경우 빈 값으로 설정)
+   externalURL='http://gitlab.tmaxcloud.org' # 외부 노출 주소 (`http://`또는 `https://` 포함)
+   ingressHost='gitlab.tmaxcloud.org' # ingress host 주소 (`http://`또는 `https://` 미포함)
    
    # 아래는 Keycloak 연동시 기재 필요
    authUrl='https://172.22.22.2' # 키클록 URL (`http://`또는 `https://` 포함)
    authClient='gitlab' # 키클록 클라이언트 이름
    authSecret='*******' # 키클록 클라이언트 시크릿
    authTLSSecretName='gitlab-secret' # TLS 시크릿 이름
-   custom_domain_name='tmaxcloud.org' #(`http://`또는 `https://`미포함)
-   
-   
-   
    ```
-   
+
 5. 위의 과정에서 생성한 tar 파일들을 폐쇄망 환경으로 이동시킨 뒤 사용하려는 registry에 이미지를 push한다.
    ```bash
    ./installer.sh prepare-offline
