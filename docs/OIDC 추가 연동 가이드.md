@@ -14,6 +14,7 @@
 $ podName=$(kubectl get po -n ${NAMESPACE} | awk '{print $1}' | sed -n 2,3p)
 $ kubectl exec -it -n ${NAMESPACE} ${podName} -- bin/bash
 ```
+---
 
 2. keycloak crt 추가하기
 
@@ -25,8 +26,8 @@ $ mkdir -p /etc/gitlab/trusted-certs
 - 참고 사진
 
   ![image](figure/cert.png)
-
-2. gitlab config  - OIDC 연동 설정 추가하기 
+---
+3. gitlab config  - OIDC 연동 설정 추가하기 
 
 ```bash
 $ cd tmp/shared/
@@ -63,7 +64,7 @@ id_path: 'preferred_username'
 - 참고 사진
 
 ![image](figure/config.png)
-
+---
 4. 깃랩 재설정
 
 ```bash
