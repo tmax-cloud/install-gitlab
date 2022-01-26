@@ -74,11 +74,11 @@ function push_argoCD(){
   cd $MANIFEST_PATH
   git remote remove origin
   rm -rf .git
-  cd $install_dir
+  cd $UPLOAD_PATH
   # if using self-signed certificate, set sslVerify as false
   git config --global http.sslVerify false
   git clone https://$gitlab_user:$GITLAB_PASSWORD@$gitlab_host/$gitlab_user/$REPO_NAME.git
-  cp -a $MANIFEST_PATH/. $install_dir/$REPO_NAME
+  cp -a $MANIFEST_PATH/. $UPLOAD_PATH/$REPO_NAME
   cd $REPO_NAME
   git add .
   git commit -m "inital_commit"
@@ -113,7 +113,17 @@ function integrate_OIDC(){
   sed -i "s/@@KEYCLOAK_SECRET@@/$KEYCLOAK_SECRET/g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
   sed -i "s|@@KEYCLOAK_URL@@|$KEYCLOAK_URL|g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
   kubectl apply -f "$install_dir/yaml/gitlab-deploy-modified.yaml"
-
+  
+  cat <<EOT | kubectl apply -n $NAMESPACE -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: $KEYCLOAK_TLS_SECRET_NAME
+type: kubernetes.io/tls
+data:
+  tls.crt: $(cat $KEYCLOAK_CERT_FILE | base64 -w 0)
+  tls.key: $(echo -n 'dummyKey' | base64 -w 0)
+EOT
   echo "=== Waiting for GitLab's address to be ready... ==="
   a=$SECONDS
   remaining_seconds=20
