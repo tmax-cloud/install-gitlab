@@ -31,12 +31,9 @@ function push_argoCD(){
   echo $personal_access_token
 
   # gitlab repository config
-  repo_config=$(cat <<-END
-  {
-    "name": "$REPO_NAME"
-  }
-  END
-  )
+
+  template='{"name":"%s"}'
+  repo_config=$(printf "$template" "$REPO_NAME")
 
   # Create gitlab repository
   curl --insecure https://$gitlab_host/api/v4/projects/ \
