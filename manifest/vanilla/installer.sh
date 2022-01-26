@@ -31,7 +31,12 @@ function push_argoCD(){
   echo $personal_access_token
 
   # gitlab repository config
-  repo_config=$(echo "{"name" : "$REPO_NAME"}")
+  repo_config=$(cat <<-END
+  {
+    "name": "$REPO_NAME"
+  }
+  END
+  )
 
   # Create gitlab repository
   curl --insecure https://$gitlab_host/api/v4/projects/ \
@@ -46,6 +51,7 @@ function push_argoCD(){
 
   cd $install_dir/$GIT_REPO
   rm -rf .git
+  git remote remove origin
   cd ..
   mv $install_dir/$GIT_REPO $install_dir/temp
 
@@ -140,6 +146,7 @@ function install(){
       break
     fi
   done
+  sleep 10s
   echo "start create repository and push argoCD manifests"
   push_argoCD
   echo  "========================================================================="
