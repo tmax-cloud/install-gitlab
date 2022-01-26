@@ -134,7 +134,7 @@ function install(){
     echo "Trial $TRIAL..."
     TRIAL=$((TRIAL+1))
     status=$(kubectl -n "$NAMESPACE" get pod -o jsonpath='{.items[0].status.containerStatuses[0].ready}')
-    if [[ "$?" == "0" ]]; then
+    if [[ "$status" == "true" ]]; then
       URL=$(kubectl -n "$NAMESPACE" exec -t "$POD" -- cat /tmp/shared/omnibus.env 2>/dev/null | grep -oP "external_url '\K[^']*(?=')")
       export GITLAB_URL="$URL"
       break
