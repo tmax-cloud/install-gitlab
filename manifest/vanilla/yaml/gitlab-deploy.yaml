@@ -1,0 +1,230 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: @@APP_NAME@@
+  namespace: @@NAMESPACE@@
+  labels:
+    app: @@APP_NAME@@
+spec:
+  selector:
+    matchLabels:
+      app: @@APP_NAME@@
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: @@APP_NAME@@
+    spec:
+      serviceAccountName: @@APP_NAME@@-account
+      initContainers:
+      - name: parse-svc
+        image: docker.io/bitnami/kubectl:1.20.10
+        env:
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: shared
+          mountPath: /tmp/shared
+        resources:
+          limits:
+            cpu: @@RESOURCE_CPU@@
+            memory: @@RESOURCE_MEM@@
+          requests:
+            cpu: @@RESOURCE_CPU@@
+            memory: @@RESOURCE_MEM@@
+        command:
+        - /bin/bash
+        - -c
+        - -x
+        - |
+          SVC_TYPE=@@SERVICE_TYPE@@
+          PORT=80
+          PORT_SSH=2221
+          # Remove fractions
+          PORT="${PORT/\.[0-9]*/}"
+          PORT_SSH="${PORT_SSH/\.[0-9]*/}"
+          # Configure Service
+
+
+          if [[ "@@INGRESS_HOST@@" == "" ]]; then
+              NOW_IP=""
+              while [ "$NOW_IP" == "" ]; do
+                  NOW_IP=$(kubectl -n @@NAMESPACE@@ get ingress @@APP_NAME@@-ingress -o jsonpath='{.status.loadBalancer.ingress[].ip}')
+              done
+              ING_HOST="@@APP_NAME@@.$NAMESPACE.${NOW_IP}.nip.io"
+              EXTERNAL_IP="http://$ING_HOST/"
+          else
+              ING_HOST=@@INGRESS_HOST@@
+              EXTERNAL_IP="http://${INGRESS_HOST}/"
+          fi
+          NOW_IP=$(kubectl -n @@NAMESPACE@@ get ingress @@APP_NAME@@-ingress -o jsonpath='{.status.loadBalancer.ingress[].ip}')
+          kubectl -n @@NAMESPACE@@ patch ingress @@APP_NAME@@-ingress --type=json -p '[{"op": "replace", "path": "/spec/rules/0/host", "value": "'$ING_HOST'"}]'
+
+          # Override external url
+          if [[ "@@EXTERNAL_URL@@" != "" ]]; then
+              EXTERNAL_IP="@@EXTERNAL_URL@@"
+          fi
+          cat <<EOT >> /tmp/shared/omnibus.env
+          external_url '$EXTERNAL_IP'
+          gitlab_rails['gitlab_shell_ssh_port'] = $PORT_SSH
+          prometheus['enable'] = false
+          prometheus['monitor_kubernetes'] = false
+          unicorn['worker_processes'] = 4
+          grafana['enable'] = false
+          nginx['client_max_body_size'] = '2500m'
+          gitlab_rails['initial_root_password'] = "@@GITLAB_PASSWORD@@"
+
+
+          EOT
+          # Add keycloak
+          if [[ "@@KEYCLOAK_URL@@" != "" ]]; then
+            if [[ "@@KEYCLOAK_TLS_SECRET_NAME@@" != "" ]]; then
+              kubectl -n @@NAMESPACE@@ get secret @@KEYCLOAK_TLS_SECRET_NAME@@ -o jsonpath='{.data.tls\.crt}' | base64 -d > /tmp/shared/keycloak.pem
+            fi
+            cat <<EOY >> /tmp/shared/omnibus.env
+          gitlab_rails['omniauth_enabled'] = true
+          gitlab_rails['omniauth_allow_single_sign_on'] = ['oauth2_generic']
+          gitlab_rails['omniauth_block_auto_created_users'] = false
+          gitlab_rails['omniauth_providers'] = [
+          {
+                  'name' => 'oauth2_generic',
+                  'issuer' => '@@KEYCLOAK_URL@@',
+                  'app_id' => '@@KEYCLOAK_CLIENT@@',
+                  'app_secret' => '@@KEYCLOAK_SECRET@@',
+                  'discovery' => true,
+                  'args' => {
+                  client_options: {
+                          'site' => '@@KEYCLOAK_URL@@',
+                          'user_info_url' => '/auth/realms/tmax/protocol/openid-connect/userinfo',
+                          'authorize_url' => '/auth/realms/tmax/protocol/openid-connect/auth',
+                          'token_url' => '/auth/realms/tmax/protocol/openid-connect/token',
+                          'redirect_uri' => '$EXTERNAL_IP/users/auth/oauth2_generic/callback',
+                  },
+                  user_response_structure: {
+                  attributes: { email:'email', first_name:'given_name', last_name:'family_name', name:'name', nickname:'preferred_username' },
+                  id_path: 'preferred_username'
+                  },
+                  }
+          }
+          ]
+          EOY
+          fi
+      - name: init-cert
+        image: docker.io/bitnami/kubectl:1.20.10
+        securityContext:
+          privileged: true
+        env:
+        - name: NODE_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        - name: shared
+          mountPath: /tmp/shared
+        resources:
+          limits:
+            cpu: @@RESOURCE_CPU@@
+            memory: @@RESOURCE_MEM@@
+          requests:
+            cpu: @@RESOURCE_CPU@@
+            memory: @@RESOURCE_MEM@@
+        command:
+        - /bin/bash
+        - -c
+        - -x
+        - |
+          SVC_TYPE=@@SERVICE_TYPE@@
+          ING_HOST=$(kubectl get -n @@NAMESPACE@@ ingress @@APP_NAME@@-ingress -o jsonpath='{.spec.rules[0].host}')
+          if [[ "@@TLS_SECRET@@" == "" ]]; then
+            openssl genrsa  -out root-ca.key 2048
+            openssl req -new -nodes -key root-ca.key -out root-ca.csr -subj "/CN=${ING_HOST}" -days 100
+            echo "
+            subjectKeyIdentifier   = hash
+            authorityKeyIdentifier = keyid:always,issuer:always
+            basicConstraints       = CA:TRUE
+            keyUsage               = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement, keyCertSign
+            subjectAltName         = DNS:${ING_HOST}
+            issuerAltName          = issuer:copy" >> v3.ext
+
+            openssl x509 -req -in root-ca.csr -signkey root-ca.key -out root-ca.crt -days 3650 -sha256 -extfile v3.ext
+
+            echo "
+            apiVersion: v1
+            kind: Secret
+            metadata:
+              name: gitlab-tls
+            type: kubernetes.io/tls
+            data:
+              ca.crt: $(cat root-ca.crt | base64 -w 0)
+              tls.crt: $(cat root-ca.crt  | base64 -w 0)
+              tls.key: $(cat root-ca.key | base64 -w 0)" >> gitlab-tls.yaml
+
+            kubectl apply -n @@NAMESPACE@@ -f gitlab-tls.yaml
+            kubectl patch ingress -n @@NAMESPACE@@ @@APP_NAME@@-ingress --type=json -p '[{"op": "replace", "path": "/spec/tls/0/hosts/0", "value": "'$ING_HOST'"}]'
+            kubectl patch ingress -n @@NAMESPACE@@ @@APP_NAME@@-ingress --type=json -p '[{"op": "replace", "path": "/spec/tls/0/secretName", "value": "gitlab-tls"}]'
+          else
+            kubectl patch ingress -n @@NAMESPACE@@ @@APP_NAME@@-ingress --type=json -p '[{"op": "replace", "path": "/spec/tls/0/secretName", "value": "@@TLS_SECRET@@"}]'
+          fi
+      containers:
+      - name: @@APP_NAME@@
+        securityContext:
+          privileged: true
+        image: docker.io/gitlab/gitlab-ce:13.6.4-ce.0
+        command:
+        - /bin/sh
+        - -c
+        - -x
+        - |
+          export GITLAB_OMNIBUS_CONFIG="$(cat /tmp/shared/omnibus.env)"
+          echo 'export GITLAB_OMNIBUS_CONFIG="$(cat /tmp/shared/omnibus.env)"' >> /root/.bashrc
+          mkdir -p /etc/gitlab/trusted-certs
+          cp /tmp/shared/keycloak.pem /etc/gitlab/trusted-certs/keycloak.pem
+          /assets/wrapper
+        ports:
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
+        - name: ssh
+          containerPort: 22
+        volumeMounts:
+        - name: @@APP_NAME@@-pv
+          mountPath: /etc/gitlab
+          subPath: config
+        - name: @@APP_NAME@@-pv
+          mountPath: /var/opt/gitlab
+          subPath: data
+        - name: shared
+          mountPath: /tmp/shared
+        resources:
+          limits:
+            cpu: @@RESOURCE_CPU@@
+            memory: @@RESOURCE_MEM@@
+          requests:
+            cpu: @@RESOURCE_CPU@@
+            memory: @@RESOURCE_MEM@@
+        readinessProbe:
+          exec:
+            command:
+            - /bin/bash
+            - -c
+            - |
+              /opt/gitlab/bin/gitlab-healthcheck --fail --max-time 10
+          periodSeconds: 150
+      volumes:
+      - name: @@APP_NAME@@-pv
+        persistentVolumeClaim:
+          claimName: @@APP_NAME@@-pvc
+      - name: shared
+        emptyDir: {}
