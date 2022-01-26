@@ -126,7 +126,7 @@ function integrate_OIDC(){
   echo "gitlab is being installed.";
   while true; do
     elapsedSeconds=$(( SECONDS - a ))
-    echo "estimated remaning time is $((remaining_seconds - elapsedSeconds / 60)) minutes"
+    echo "Estimated remaining time is $((remaining_seconds - elapsedSeconds / 60)) minutes"
     sleep 60s
 
     status=$(kubectl -n "$NAMESPACE" get pod -o jsonpath='{.items[0].status.containerStatuses[0].ready}')
@@ -178,7 +178,7 @@ function install(){
   echo "gitlab is being installed.";
   while true; do
     elapsedSeconds=$(( SECONDS - a ))
-    echo "estimated remaning time is $((remaining_seconds - elapsedSeconds / 60)) minutes"
+    echo "Estimated remaining time is $((remaining_seconds - elapsedSeconds / 60)) minutes"
     sleep 60s
     status=$(kubectl -n "$NAMESPACE" get pod -o jsonpath='{.items[0].status.containerStatuses[0].ready}')
     if [[ "$status" == "true" ]]; then
