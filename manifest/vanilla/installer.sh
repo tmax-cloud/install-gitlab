@@ -43,6 +43,9 @@ function push_argoCD(){
   -H "PRIVATE-TOKEN: $personal_access_token" \
   -d "$repo_config"
   echo "finish create repo"
+  git config --global user.name "Administrator"
+  git config --global user.email "admin@example.com"
+
 
   git clone "$GIT_URL$GIT_REPO.git"
 
@@ -175,6 +178,9 @@ function main(){
       ;;
     integrate_OIDC)
       integrate_OIDC
+      ;;
+    push_argoCD)
+      push_argoCD
       ;;
     *)
       echo "Usage: $0 [install|uninstall|integrate_OIDC]"
