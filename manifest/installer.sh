@@ -71,17 +71,14 @@ function push_argoCD(){
   git config --global user.name "Administrator"
   git config --global user.email "admin@example.com"
 
-  mkdir temp
-  cp -a $install_dir/MANIFEST_PATH/. $install_dir/temp
-  cd temp
+  cd $MANIFEST_PATH
   git remote remove origin
   rm -rf .git
   cd $install_dir
-
   # if using self-signed certificate, set sslVerify as false
   git config --global http.sslVerify false
   git clone https://$gitlab_user:$GITLAB_PASSWORD@$gitlab_host/$gitlab_user/$REPO_NAME.git
-  cp -a $install_dir/temp/. $install_dir/$REPO_NAME
+  cp -a $MANIFEST_PATH/. $install_dir/$REPO_NAME
   cd $REPO_NAME
   git add .
   git commit -m "inital_commit"
@@ -119,7 +116,7 @@ function integrate_OIDC(){
 
   echo "=== Waiting for GitLab's address to be ready... ==="
   a=$SECONDS
-  remaining_seconds=660
+  remaining_seconds=20
   echo "gitlab is being installed.";
   while true; do
     elapsedSeconds=$(( SECONDS - a ))
@@ -171,7 +168,7 @@ function install(){
   echo "=== Waiting for GitLab's address to be ready... ==="
 
   a=$SECONDS
-  remaining_seconds=660
+  remaining_seconds=20
   echo "gitlab is being installed.";
   while true; do
     elapsedSeconds=$(( SECONDS - a ))
