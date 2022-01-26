@@ -117,7 +117,16 @@
   ./installer.sh integrate_OIDC
   ```
 
-  
+## Step 3. Ingress -traefik 설정
+
+* 목적 : `GitLab ingress traefik 설정`
+
+* 생성 순서 : gitlab.config에 ingress 관련 정보 작성 이후,  아래 command로 설치 
+
+  ```bash
+  ./installer.sh configure_ingress
+  ```
+
 
 
 ## 
