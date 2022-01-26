@@ -123,11 +123,12 @@ function integrate_OIDC(){
   echo "=== Waiting for GitLab's address to be ready... ==="
   a=$SECONDS
   remaining_seconds=660
+  echo "gitlab is being installed.";
   while true; do
-    sleep 60s
     elapsedSeconds=$(( SECONDS - a ))
-    remaining_seconds=$((remaining_seconds-elapsedSeconds))
-    echo "gitlab is being installed."; echo "estimated remaning time is $((remaining_seconds / 60)) minutes"
+    echo "estimated remaning time is $((remaining_seconds - elapsedSeconds / 60)) minutes"
+    sleep 60s
+
     status=$(kubectl -n "$NAMESPACE" get pod -o jsonpath='{.items[0].status.containerStatuses[0].ready}')
     if [[ "$status" == "true" ]]; then
       URL=$(kubectl -n "$NAMESPACE" exec -t "$POD" -- cat /tmp/shared/omnibus.env 2>/dev/null | grep -oP "external_url '\K[^']*(?=')")
@@ -174,11 +175,11 @@ function install(){
 
   a=$SECONDS
   remaining_seconds=660
+  echo "gitlab is being installed.";
   while true; do
-    sleep 60s
     elapsedSeconds=$(( SECONDS - a ))
-    remaining_seconds=$((remaining_seconds-elapsedSeconds))
-    echo "gitlab is being installed."; echo "estimated remaning time is $((remaining_seconds / 60)) minutes"
+    echo "estimated remaning time is $((remaining_seconds - elapsedSeconds / 60)) minutes"
+    sleep 60s
     status=$(kubectl -n "$NAMESPACE" get pod -o jsonpath='{.items[0].status.containerStatuses[0].ready}')
     if [[ "$status" == "true" ]]; then
       URL=$(kubectl -n "$NAMESPACE" exec -t "$POD" -- cat /tmp/shared/omnibus.env 2>/dev/null | grep -oP "external_url '\K[^']*(?=')")
