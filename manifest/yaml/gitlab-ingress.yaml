@@ -1,0 +1,53 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/instance: traefik
+    app.kubernetes.io/managed-bu: tmax-cloud
+    app.kubernetes.io/name: api-gateway
+  name: gitlab
+  namespace: @@NAMESPACE@@
+spec:
+  secretName: gitlab-cert
+  commonName: api-gateway
+  subject:
+    organizations:
+      - "tmax-cloud"
+  isCA: false
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+    - client auth
+  dnsNames:
+    - tmax-cloud
+    - @@APP_NAME@@-service.@@NAMESPACE@@.svc
+  issuerRef:
+    kind: ClusterIssuer
+    group: cert-manager.io
+    name: tmaxcloud-issuer
+---+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: @@APP_NAME@@-ingress
+  labels:
+    ingress.tmaxcloud.org/name: gitlab
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  ingressClassName: tmax-cloud
+  tls:
+  - hosts:
+    - @@INGRESS_HOST@@
+  rules:
+    - host: @@INGRESS_HOST@@
+      http:
+       paths:
+         - pathType: Prefix
+           path: /
+           backend:
+             service:
+               name: @@APP_NAME@@-service
+               port:
+                 number: 80

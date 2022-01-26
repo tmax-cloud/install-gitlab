@@ -2,6 +2,32 @@
 [[ "$0" != "$BASH_SOURCE" ]] && export install_dir=$(dirname "$BASH_SOURCE") || export install_dir=$(dirname $0)
 . "$install_dir/gitlab.config"
 
+function prepare_online(){
+  echo  "========================================================================="
+  echo  "========================  Preparing for GitLab =========================="
+  echo  "========================================================================="
+
+  sudo docker pull "gitlab/gitlab-ce:13.6.4-ce.0"
+  sudo docker pull "bitnami/kubectl:latest"
+  sudo docker tag "gitlab/gitlab-ce:13.6.4-ce.0" "gitlab:13.6.4-ce.0"
+  sudo docker tag "bitnami/kubectl:latest" "kubectl:latest"
+  sudo docker save "gitlab:13.6.4-ce.0" > "$install_dir/tar/gitlab_13.6.4-ce.0.tar"
+  sudo docker save "kubectl:latest" > "$install_dir/tar/kubectl_latest.tar"
+}
+
+function prepare_offline(){
+  echo  "========================================================================="
+  echo  "========================  Preparing for GitLab =========================="
+  echo  "========================================================================="
+
+  sudo docker load < "$install_dir/tar/gitlab_13.6.4-ce.0.tar"
+  sudo docker load < "$install_dir/tar/kubectl_latest.tar"
+  sudo docker tag "gitlab:13.6.4-ce.0" "$imageRegistry/gitlab:13.6.4-ce.0"
+  sudo docker tag "kubectl:latest" "$imageRegistry/kubectl:latest"
+  sudo docker push "$imageRegistry/gitlab:13.6.4-ce.0"
+  sudo docker push "$imageRegistry/kubectl:latest"
+}
+
 function push_argoCD(){
   git --version 2>&1 >/dev/null
   GIT_IS_AVAILABLE=$?
@@ -28,7 +54,6 @@ function push_argoCD(){
       --data 'personal_access_token[name]=golab-generated&personal_access_token[expires_at]=&personal_access_token[scopes][]=api')
 
   personal_access_token=$(echo $body_header | perl -ne 'print "$1\n" if /created-personal-access-token"[[:blank:]]value="(.+?)"/' | sed -n 1p)
-  echo $personal_access_token
 
   # gitlab repository config
 
@@ -46,15 +71,15 @@ function push_argoCD(){
   git config --global user.name "Administrator"
   git config --global user.email "admin@example.com"
 
-
-  git clone "$GIT_URL$GIT_REPO.git"
-
-  cd $install_dir/$GIT_REPO
-  rm -rf .git
-  git remote remove origin
-  cd ..
+  mv $install_dir/$GIT_REPO $install_dir/temp
   mv $install_dir/$GIT_REPO $install_dir/temp
 
+  mkdir temp
+  cp -a $install_dir/temp/. $install_dir/temp
+  cd temp
+  git remote remove origin
+  rm -rf .git
+  cd $install_dir
 
   # if using self-signed certificate, set sslVerify as false
   git config --global http.sslVerify false
@@ -70,8 +95,13 @@ function integrate_OIDC(){
   echo  "========================================================================="
   echo  "========================  Integrate with OIDC =========================="
   echo  "========================================================================="
-
   cp "$install_dir/yaml/gitlab-deploy.yaml" "$install_dir/yaml/gitlab-deploy-modified.yaml"
+
+  if [[ "$imageRegistry" != "" ]]; then
+    sed -i -E "s/gitlab\/gitlab-ce\:13.6.4-ce.0/$imageRegistry\/gitlab\:13.6.4-ce.0/g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
+    sed -i -E "s/bitnami\/kubectl/$imageRegistry\/kubectl/g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
+  fi
+
   sed -i "s/@@NAMESPACE@@/$NAMESPACE/g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
   sed -i "s/@@APP_NAME@@/$APP_NAME/g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
   sed -i "s/@@STORAGE@@/$STORAGE/g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
@@ -91,15 +121,16 @@ function integrate_OIDC(){
   kubectl apply -f "$install_dir/yaml/gitlab-deploy-modified.yaml"
 
   echo "=== Waiting for GitLab's address to be ready... ==="
-  TRIAL=0
+  a=$SECONDS
+  remaining_seconds=660
   while true; do
-    sleep 5s
-    echo "Trial $TRIAL..."
-    TRIAL=$((TRIAL+1))
+    sleep 60s
+    elapsedSeconds=$(( SECONDS - a ))
+    remaining_seconds=$((remaining_seconds-elapsedSeconds))
+    echo "gitlab is being installed."; echo "estimated remaning time is $((remaining_seconds / 60)) minutes"
     status=$(kubectl -n "$NAMESPACE" get pod -o jsonpath='{.items[0].status.containerStatuses[0].ready}')
     if [[ "$status" == "true" ]]; then
       URL=$(kubectl -n "$NAMESPACE" exec -t "$POD" -- cat /tmp/shared/omnibus.env 2>/dev/null | grep -oP "external_url '\K[^']*(?=')")
-      echo "Access URL is $URL"
       export GITLAB_URL="$URL"
       break
     fi
@@ -114,6 +145,12 @@ function install(){
   echo  "=======================  Start Installing GitLab ========================"
   echo  "========================================================================="
   cp "$install_dir/yaml/gitlab.yaml" "$install_dir/yaml/gitlab_modified.yaml"
+
+  if [[ "$imageRegistry" != "" ]]; then
+    sed -i -E "s/gitlab\/gitlab-ce\:13.6.4-ce.0/$imageRegistry\/gitlab\:13.6.4-ce.0/g" "$install_dir/yaml/gitlab_modified.yaml"
+    sed -i -E "s/bitnami\/kubectl/$imageRegistry\/kubectl/g" "$install_dir/yaml/gitlab_modified.yaml"
+  fi
+
   sed -i "s/@@NAMESPACE@@/$NAMESPACE/g" "$install_dir/yaml/gitlab_modified.yaml"
   sed -i "s/@@APP_NAME@@/$APP_NAME/g" "$install_dir/yaml/gitlab_modified.yaml"
   sed -i "s/@@STORAGE@@/$STORAGE/g" "$install_dir/yaml/gitlab_modified.yaml"
@@ -134,11 +171,14 @@ function install(){
   kubectl apply -f "$install_dir/yaml/gitlab_modified.yaml"
 
   echo "=== Waiting for GitLab's address to be ready... ==="
-  TRIAL=0
+
+  a=$SECONDS
+  remaining_seconds=660
   while true; do
-    sleep 5s
-    echo "Trial $TRIAL..."
-    TRIAL=$((TRIAL+1))
+    sleep 60s
+    elapsedSeconds=$(( SECONDS - a ))
+    remaining_seconds=$((remaining_seconds-elapsedSeconds))
+    echo "gitlab is being installed."; echo "estimated remaning time is $((remaining_seconds / 60)) minutes"
     status=$(kubectl -n "$NAMESPACE" get pod -o jsonpath='{.items[0].status.containerStatuses[0].ready}')
     if [[ "$status" == "true" ]]; then
       URL=$(kubectl -n "$NAMESPACE" exec -t "$POD" -- cat /tmp/shared/omnibus.env 2>/dev/null | grep -oP "external_url '\K[^']*(?=')")
@@ -168,6 +208,23 @@ function uninstall(){
   echo  "========================================================================="
 }
 
+function configure_ingress(){
+  echo  "========================================================================="
+  echo  "========================  Integrate with OIDC =========================="
+  echo  "========================================================================="
+  cp "$install_dir/yaml/gitlab-ingress.yaml" "$install_dir/yaml/gitlab-ingress-modified.yaml"
+
+
+  sed -i "s/@@NAMESPACE@@/$NAMESPACE/g" "$install_dir/yaml/gitlab-ingress-modified.yaml"
+  sed -i "s/@@APP_NAME@@/$APP_NAME/g" "$install_dir/yaml/gitlab-ingress-modified.yaml"
+  sed -i "s/@@INGRESS_HOST@@/$INGRESS_HOST/g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
+  kubectl apply -f "$install_dir/yaml/gitlab-ingress-modified.yaml"
+
+  echo  "========================================================================="
+  echo  "====================  finish reconfiguring Ingress ====================="
+  echo  "========================================================================="
+}
+
 function main(){
   case "${1:-}" in
     install)
@@ -182,8 +239,17 @@ function main(){
     push_argoCD)
       push_argoCD
       ;;
+    prepare-offline)
+      prepare_offline
+      ;;
+    prepare-online)
+      prepare_online
+      ;;
+    configure_ingress)
+      configure_ingress
+      ;;
     *)
-      echo "Usage: $0 [install|uninstall|integrate_OIDC]"
+      echo "Usage: $0 [install|uninstall|integrate_OIDC|push_argoCD|prepare_offline|prepare_online|configure_ingress]"
       ;;
   esac
 }
