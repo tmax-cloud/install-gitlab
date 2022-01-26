@@ -71,11 +71,8 @@ function push_argoCD(){
   git config --global user.name "Administrator"
   git config --global user.email "admin@example.com"
 
-  mv $install_dir/$GIT_REPO $install_dir/temp
-  mv $install_dir/$GIT_REPO $install_dir/temp
-
   mkdir temp
-  cp -a $install_dir/temp/. $install_dir/temp
+  cp -a $install_dir/MANIFEST_PATH/. $install_dir/temp
   cd temp
   git remote remove origin
   rm -rf .git
