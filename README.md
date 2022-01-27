@@ -70,17 +70,17 @@ EXTERNAL_URL=                   # http:// 또는 https:// 포함. 없으면 공�
 TLS_SECRET=                     # 공인인증서 시크릿. 없으면 공백
 
 # 최초 설치시, 공백 - HYPERAUTH 설치 이후 사용 가능함
-KEYCLOAK_TLS_SECRET_NAME=			              # KEYCLOAK_ROOT_CA 시크릿 이름 설정  ex) gitlab-root-ca
-KEYCLOAK_CERT_FILE=	  			   				# KEYCLOAK_ROOT_CA 파일 경로
-KEYCLOAK_URL=				                     # http:// 또는 https:// 포함. 없으면 공백
-KEYCLOAK_CLIENT=				                 # KEYCLOAK CLINET 이름.
-KEYCLOAK_SECRET=				                 # KEYCLOAK CONFIDENTIAL
+KEYCLOAK_TLS_SECRET_NAME=			  # KEYCLOAK_ROOT_CA 시크릿 이름 설정  ex) gitlab-root-ca
+KEYCLOAK_CERT_FILE=	  			   	# KEYCLOAK_ROOT_CA 파일 경로
+KEYCLOAK_URL=				            # http:// 또는 https:// 포함. 없으면 공백
+KEYCLOAK_CLIENT=				        # KEYCLOAK CLINET 이름.
+KEYCLOAK_SECRET=				        # KEYCLOAK CONFIDENTIAL
 
 # GITLAB 설정
-GITLAB_PASSWORD=					            # root사용자 비밀번호
-REPO_NAME=argocd-installer                        # gitlab에 등록될 repository 이름
-MANIFEST_PATH=								   # 업로드 할 폴더의 경로 
-UPLOAD_PATH=								   # gitlab에 등록할 repository의 경로 설정 
+GITLAB_PASSWORD=					      # root사용자 비밀번호
+REPO_NAME=argocd-installer      # gitlab에 등록될 repository 이름
+MANIFEST_PATH=								  # 업로드 할 폴더의 경로 
+UPLOAD_PATH=								    # gitlab에 등록할 repository의 경로 설정 
 # 주의: MANIFEST_PATH와 UPLOAD_PATH가 동일한 directory에 있는 것은 피해야함
 
 
