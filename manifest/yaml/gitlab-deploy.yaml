@@ -62,7 +62,7 @@ spec:
               EXTERNAL_IP="http://$ING_HOST/"
           else
               ING_HOST=@@INGRESS_HOST@@
-              EXTERNAL_IP="http://${INGRESS_HOST}/"
+              EXTERNAL_IP="http://${ING_HOST}/"
           fi
           NOW_IP=$(kubectl -n @@NAMESPACE@@ get ingress @@APP_NAME@@-ingress -o jsonpath='{.status.loadBalancer.ingress[].ip}')
           kubectl -n @@NAMESPACE@@ patch ingress @@APP_NAME@@-ingress --type=json -p '[{"op": "replace", "path": "/spec/rules/0/host", "value": "'$ING_HOST'"}]'

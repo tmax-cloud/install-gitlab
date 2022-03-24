@@ -113,7 +113,7 @@ function integrate_OIDC(){
   sed -i "s/@@KEYCLOAK_SECRET@@/$KEYCLOAK_SECRET/g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
   sed -i "s|@@KEYCLOAK_URL@@|$KEYCLOAK_URL|g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
   kubectl apply -f "$install_dir/yaml/gitlab-deploy-modified.yaml"
-  
+
   cat <<EOT | kubectl apply -n $NAMESPACE -f -
 apiVersion: v1
 kind: Secret
@@ -218,12 +218,27 @@ function configure_ingress(){
   echo  "========================  Integrate with OIDC =========================="
   echo  "========================================================================="
   cp "$install_dir/yaml/gitlab-ingress.yaml" "$install_dir/yaml/gitlab-ingress-modified.yaml"
+  cp "$install_dir/yaml/gitlab-deploy.yaml" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
 
+  sed -i "s/@@APP_NAME@@/$APP_NAME/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@STORAGE@@/$STORAGE/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@SERVICE_TYPE@@/$SERVICE_TYPE/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@GITLAB_PASSWORD@@/$GITLAB_PASSWORD/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@RESOURCE_CPU@@/$RESOURCE_CPU/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@RESOURCE_MEM@@/$RESOURCE_MEM/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@INGRESS_HOST@@/$INGRESS_HOST/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@INGRESS_CLASS@@/$INGRESS_CLASS/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@STORAGE_CLASS@@/$STORAGE_CLASS/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s|@@EXTERNAL_URL@@|$EXTERNAL_URL|g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@TLS_SECRET@@/$TLS_SECRET/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@KEYCLOAK_TLS_SECRET_NAME@@/$KEYCLOAK_TLS_SECRET_NAME/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@KEYCLOAK_CLIENT@@/$KEYCLOAK_CLIENT/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s/@@KEYCLOAK_SECRET@@/$KEYCLOAK_SECRET/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+  sed -i "s|@@KEYCLOAK_URL@@|$KEYCLOAK_URL|g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
 
-  sed -i "s/@@NAMESPACE@@/$NAMESPACE/g" "$install_dir/yaml/gitlab-ingress-modified.yaml"
-  sed -i "s/@@APP_NAME@@/$APP_NAME/g" "$install_dir/yaml/gitlab-ingress-modified.yaml"
-  sed -i "s/@@INGRESS_HOST@@/$INGRESS_HOST/g" "$install_dir/yaml/gitlab-deploy-modified.yaml"
   kubectl apply -f "$install_dir/yaml/gitlab-ingress-modified.yaml"
+  kubectl apply -f "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
+
 
   echo  "========================================================================="
   echo  "====================  finish reconfiguring Ingress ====================="

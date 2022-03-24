@@ -26,11 +26,12 @@ spec:
     kind: ClusterIssuer
     group: cert-manager.io
     name: tmaxcloud-issuer
----+
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: @@APP_NAME@@-ingress
+  namespace: @@NAMESPACE@@  
   labels:
     ingress.tmaxcloud.org/name: gitlab
   annotations:
