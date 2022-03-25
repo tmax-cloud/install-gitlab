@@ -212,7 +212,7 @@ function uninstall(){
 
 function configure_ingress(){
   echo  "========================================================================="
-  echo  "========================  Integrate with OIDC =========================="
+  echo  "========================  configure ingress =========================="
   echo  "========================================================================="
   cp "$install_dir/yaml/gitlab-ingress.yaml" "$install_dir/yaml/gitlab-ingress-modified.yaml"
   cp "$install_dir/yaml/gitlab-deploy.yaml" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
@@ -221,6 +221,7 @@ function configure_ingress(){
   sed -i "s/@@APP_NAME@@/$APP_NAME/g" "$install_dir/yaml/gitlab-ingress-modified.yaml"
   sed -i "s/@@INGRESS_HOST@@/$INGRESS_HOST/g" "$install_dir/yaml/gitlab-ingress-modified.yaml"
 
+  sed -i "s/@@NAMESPACE@@/$NAMESPACE/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
   sed -i "s/@@APP_NAME@@/$APP_NAME/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
   sed -i "s/@@SERVICE_TYPE@@/$SERVICE_TYPE/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
   sed -i "s/@@GITLAB_PASSWORD@@/$GITLAB_PASSWORD/g" "$install_dir/yaml/gitlab-deploy-ingress-modified.yaml"
