@@ -143,9 +143,11 @@ kubectl exec -it -n {NS명} {POD명} gitlab-rake gitlab:backup:create
 
 ## Step 2. 백업 파일 복사하기
 
+- 백업파일명명규칙: `* _gitlab_backup.tar`
+
 ```bash
 kubectl cp {NS명}/{POD명}:var/opt/gitlab/backups/{BACKUP_TAR파일명} {복사할 위치/파일명.tar}
-# ex) kubectl cp gitlab-system/gitlab-5c59765867-rnp8v:var/opt/gitlab/backups/1652685285_2022_05_16_13.6.4_gitlab_backup.tar ./test.tar
+# ex) kubectl cp gitlab-system/gitlab-5c59765867-rnp8v:var/opt/gitlab/backups/1652685285_2022_05_16_13.6.4_gitlab_backup.tar ./test__gitlab_backup.tar
 ```
 
 ## Step 3. 시크릿 및 설정값 복사하기
