@@ -1,6 +1,15 @@
 # GitLab 설치 가이드
 
+## 개요
+
+GitLab is a single application that spans the entire software development lifecycle
+
+## 목적
+
+사설 GitLab 설치 
+
 ## 구성 요소 및 버전
+
 * gitlab ([gitlab/gitlab-ce:13.6.4-ce.0](https://hub.docker.com/layers/gitlab/gitlab-ce/13.6.4-ce.0/images/sha256-5c8937153d7d1373d6b2cbe6f3c5e4b80e85f13aa21c09261d7d02960d7bb774?context=explore))
 * bitnami/kubectl ([bitnami/kubectl](https://hub.docker.com/layers/bitnami/kubectl/latest/images/sha256-c2844926575f75dcefbc67a1375531bcfaea07cd404e57bdc274380a513be2bd?context=explore))
 
