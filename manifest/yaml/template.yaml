@@ -320,6 +320,7 @@ objects:
             prometheus['enable'] = false
             prometheus['monitor_kubernetes'] = false
             unicorn['worker_processes'] = 4
+            puma['worker_processes'] = 8
             grafana['enable'] = false
             EOT
             # Add keycloak
