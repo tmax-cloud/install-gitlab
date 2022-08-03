@@ -300,9 +300,8 @@ objects:
                     ING_HOST="${APP_NAME}.$NAMESPACE.${NOW_IP}.nip.io"
                     EXTERNAL_IP="http://$ING_HOST/"
                 else
-                    ING_HOST=$(kubectl get ingress ${APP_NAME}-ingress -o jsonpath='{.spec.rules[].host}')
-                    #ING_HOST="${INGRESS_HOST}"
-                    EXTERNAL_IP="http://$ING_HOST/"
+                    ING_HOST="${INGRESS_HOST}"
+                    EXTERNAL_IP="http://${INGRESS_HOST}/"
                 fi
                 kubectl patch ingress ${APP_NAME}-ingress --type=json -p '[{"op": "replace", "path": "/spec/rules/0/host", "value": "'$ING_HOST'"}]'
             else
@@ -310,10 +309,8 @@ objects:
             fi
             # Override external url
             if [[ "${EXTERNAL_URL}" != "" ]]; then
-                #EXTERNAL_IP="${EXTERNAL_URL}"
-                EXTERNAL_IP="http://${ING_HOST}"
+                EXTERNAL_IP="${EXTERNAL_URL}"
             fi
-
             cat <<EOT >> /tmp/shared/omnibus.env
             external_url '$EXTERNAL_IP'
             gitlab_rails['gitlab_shell_ssh_port'] = $PORT_SSH
