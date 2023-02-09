@@ -104,7 +104,7 @@ objects:
     resources: ["secrets"]
     resourceNames: ["${KEYCLOAK_TLS_SECRET_NAME}"]
     verbs: ["list", "get"]
-  - apiGroups: ["networkings", "extensions"]
+  - apiGroups: ["networkings", "extensions", "networking.k8s.io"]
     resources: ["ingresses"]
     resourceNames: ["${APP_NAME}-ingress"]
     verbs: ["get", "list", "create", "patch", "update", "delete"]
