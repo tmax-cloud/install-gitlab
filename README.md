@@ -110,7 +110,7 @@ GitLab is a single application that spans the entire software development lifecy
    ```
 
 ## root 비밀번호
-username: root
+username: root  
 password:
 ```bash
 kubectl exec {gitlab-pod-name} -n gitlab-system -- grep 'Password:' /etc/gitlab/initial_root_password
