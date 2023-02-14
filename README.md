@@ -108,3 +108,10 @@ GitLab is a single application that spans the entire software development lifecy
    ```bash
    ./installer.sh unsinstall
    ```
+
+## root 비밀번호
+username: root
+password:
+```bash
+kubectl exec {gitlab-pod-name} -n gitlab-system -- grep 'Password:' /etc/gitlab/initial_root_password
+```
