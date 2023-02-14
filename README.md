@@ -10,7 +10,7 @@ GitLab is a single application that spans the entire software development lifecy
 
 ## 구성 요소 및 버전
 
-* gitlab ([gitlab/gitlab-ce:13.6.4-ce.0](https://hub.docker.com/layers/gitlab/gitlab-ce/13.6.4-ce.0/images/sha256-5c8937153d7d1373d6b2cbe6f3c5e4b80e85f13aa21c09261d7d02960d7bb774?context=explore))
+* gitlab ([gitlab/gitlab-ce:15.3.2-ce.0](https://hub.docker.com/layers/gitlab/gitlab-ce/15.3.2-ce.0/images/sha256-3ebdf9c85f8f78f058c4313eb9e222068410ce4cba269e7f22321e255fc3cf6d?context=explore))
 * bitnami/kubectl ([bitnami/kubectl](https://hub.docker.com/layers/bitnami/kubectl/latest/images/sha256-c2844926575f75dcefbc67a1375531bcfaea07cd404e57bdc274380a513be2bd?context=explore))
 
 ## Prerequisite
@@ -21,7 +21,7 @@ GitLab is a single application that spans the entire software development lifecy
 1. 폐쇄망에서 설치하는 경우 사용하는 image repository에 Gitlab 설치 시 필요한 이미지를 push한다.
     * 작업 디렉토리 생성 및 환경 설정
    ```bash
-   git clone https://github.com/tmax-cloud/install-gitlab.git -b 5.0 --single-branch
+   git clone https://github.com/tmax-cloud/install-gitlab.git -b 15.3.2-ce.0 --single-branch
    cd install-gitlab/manifest
     
    ./installer.sh prepare-online
