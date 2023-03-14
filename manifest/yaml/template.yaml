@@ -316,7 +316,7 @@ objects:
             gitlab_rails['gitlab_shell_ssh_port'] = $PORT_SSH
             prometheus['enable'] = false
             prometheus['monitor_kubernetes'] = false
-            puma['worker_processes'] = 8
+            puma['worker_processes'] = 2
             grafana['enable'] = false
             EOT
             # Add keycloak
